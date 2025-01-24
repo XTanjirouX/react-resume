@@ -2,11 +2,21 @@ import { render, screen } from '@testing-library/react';
 import App from './App';
 import data from "./data.json";
 
+// Antes de todas las pruebas, guarda el valor original de matchMedia
+beforeAll(() => {
+  global.originalMatchMedia = window.matchMedia;
+});
+
+// Limpia después de cada prueba para evitar interferencias entre pruebas
+afterEach(() => {
+  window.matchMedia = global.originalMatchMedia;
+});
+
 test('aplicar tema por defecto', () => {
   // Mock window.matchMedia
   window.matchMedia = jest.fn().mockImplementation((query) => {
     return {
-      matches: query === '(prefers-color-scheme: dark)',
+      matches: query === '(prefers-color-scheme: dark)', // Simula el preferir el tema oscuro
       media: query,
       onchange: null,
       addListener: jest.fn(),
@@ -15,16 +25,16 @@ test('aplicar tema por defecto', () => {
   });
 
   render(<App />);
-
   const htmlElement = document.documentElement;
   const appliedTheme = htmlElement.getAttribute('data-theme');
 
+  // Verifica que el tema aplicado sea 'dark' o 'light'
   expect(['light', 'dark']).toContain(appliedTheme);
 });
 
 test('renderiza toda la informacion', () => {
   render(<App />);
-
+  
   // Verificar que los componentes clave están presentes
   expect(screen.getByText(data.info.name)).toBeInTheDocument(); // Header
   expect(screen.getByText(data.experience[0].company)).toBeInTheDocument(); // ExperienceSection
